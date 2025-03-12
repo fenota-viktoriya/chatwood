@@ -1,20 +1,42 @@
 {
-  "name": "my-chroma-project",
+  "name": "ai-knowledge-bot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI-powered knowledge base chatbot with Chatwoot integration",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "add-document": "node src/services/dbClient.js",
+    "list-documents": "node src/services/fetchVectors.js",
+    "test-search": "node src/services/searchVectors.js",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "chatbot",
+    "chatwoot",
+    "knowledge-base",
+    "chromadb",
+    "vector-search",
+    "openai"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.3.0",
     "chromadb": "^1.10.4",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "openai": "^4.85.1"
+    "openai": "^4.85.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
