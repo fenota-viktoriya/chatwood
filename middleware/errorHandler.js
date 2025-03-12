@@ -1,6 +1,6 @@
-// src/middleware/errorHandler.js
-import logger from "../../utils/logger.js";
-import { config } from "../../config/index.js";
+// middleware/errorHandler.js
+import logger from "../utils/logger.js";
+import { config } from "../config/index.js";
 
 /**
  * Custom error class for application errors

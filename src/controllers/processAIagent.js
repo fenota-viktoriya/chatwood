@@ -6,45 +6,40 @@ import logger from "../utils/logger.js";
 import { AppError } from "../middleware/errorHandler.js";
 
 /**
- * Обробка запиту користувача через AI
- * @param {string} userQuery - Запит користувача
- * @param {Object} options - Додаткові параметри
- * @returns {Promise<string>} Відповідь від AI
+ * Process user request through AI
+ * @param {string} userQuery - User request
+ * @param {Object} options - Additional parameters
+ * @returns {Promise<string>} Response from AI
  */
 export async function processAIagent(userQuery, options = {}) {
   try {
-    logger.info("Отримано запит користувача", {
+    logger.info("Received user request", {
       query: userQuery,
       options,
     });
 
     if (!userQuery || userQuery.trim() === "") {
-      return "Будь ласка, введіть ваше питання.";
+      return "Please enter your question.";
     }
 
-    // Отримання вектору запиту
-    logger.debug("Генерація вектору для запиту користувача");
+    // Get query vector
+    logger.debug("Generating vector for user query");
     const queryEmbedding = await getTextEmbedding(userQuery);
 
-    // Пошук релевантних документів
-    logger.debug("Пошук релевантних документів");
+    // Search for relevant documents
+    logger.debug("Searching for relevant documents");
     const relevantDocs = await searchSimilarDocuments(
       userQuery,
       queryEmbedding
     );
 
-    if (
-      !relevantDocs ||
-      relevantDocs === "Вибачте, не знайдено відповідних результатів."
-    ) {
-      logger.info(
-        "Не знайдено релевантних документів, генерую загальну відповідь"
-      );
+    if (!relevantDocs || relevantDocs === "Sorry, no relevant results found.") {
+      logger.info("No relevant documents found, generating general response");
       return await generateCompletion(userQuery, "");
     }
 
-    // Генерація відповіді з контекстом
-    logger.debug("Генерація відповіді з контекстом");
+    // Generate response with context
+    logger.debug("Generating response with context");
     const aiResponse = await generateCompletion(
       userQuery,
       relevantDocs,
@@ -53,42 +48,42 @@ export async function processAIagent(userQuery, options = {}) {
 
     return aiResponse;
   } catch (error) {
-    logger.error("Помилка обробки запиту AI", { error });
+    logger.error("Error processing AI request", { error });
 
-    // Формування зрозумілої відповіді користувачу
+    // Providing understandable response to the user
     if (error instanceof AppError) {
       if (error.statusCode === 401) {
-        return "Виникла проблема з автентифікацією AI сервісу. Зверніться до адміністратора.";
+        return "There was a problem with AI service authentication. Please contact the administrator.";
       } else if (error.statusCode === 429) {
-        return "Перевищено ліміт запитів до AI сервісу. Спробуйте пізніше.";
+        return "The AI service request limit has been exceeded. Please try again later.";
       }
     }
 
-    return `На жаль, виникла помилка при обробці вашого запиту. ${error.message}`;
+    return `Sorry, an error occurred while processing your request. ${error.message}`;
   }
 }
 
 /**
- * Обробка текстового повідомлення користувача
- * @param {string} message - Повідомлення користувача
- * @returns {Promise<string>} Результат обробки
+ * Process user text message
+ * @param {string} message - User message
+ * @returns {Promise<string>} Processing result
  */
 export async function processUserMessage(message) {
   try {
     if (!message || message.trim() === "") {
-      return "Будь ласка, введіть ваше питання.";
+      return "Please enter your question.";
     }
 
-    // Отримання вектору
+    // Get vector
     const queryEmbedding = await getTextEmbedding(message);
 
-    // Пошук релевантних документів
+    // Search for relevant documents
     const results = await searchSimilarDocuments(message, queryEmbedding);
 
     return results;
   } catch (error) {
-    logger.error("Помилка обробки повідомлення користувача", { error });
-    return "Сталася помилка під час пошуку.";
+    logger.error("Error processing user message", { error });
+    return "An error occurred during the search.";
   }
 }
 

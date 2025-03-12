@@ -5,23 +5,21 @@ import { config } from "../../config/index.js";
 import logger from "../../utils/logger.js";
 import { AppError } from "../../middleware/errorHandler.js";
 
-// Перевірка наявності API ключа
+// Check for API key
 if (!config.openai.apiKey) {
-  throw new Error(
-    "Відсутній OpenAI API ключ. Додайте його у config.js або .env."
-  );
+  throw new Error("Missing OpenAI API key. Add it to config.js or .env file.");
 }
 
-// Ініціалізація OpenAI SDK
+// Initialize OpenAI SDK
 const openai = new OpenAI({
   apiKey: config.openai.apiKey,
 });
 
 /**
- * Отримання векторного вбудовування тексту через OpenAI API
- * @param {string} text - Текст для векторизації
- * @param {string} model - Модель для вбудовування
- * @returns {Promise<Array<number>>} Вектор вбудовування
+ * Get text vector embedding through OpenAI API
+ * @param {string} text - Text for vectorization
+ * @param {string} model - Embedding model
+ * @returns {Promise<Array<number>>} Embedding vector
  */
 export async function getTextEmbedding(
   text,
@@ -29,15 +27,15 @@ export async function getTextEmbedding(
 ) {
   try {
     if (!text || typeof text !== "string" || text.trim() === "") {
-      throw new Error("Текст для векторизації не може бути порожнім");
+      throw new Error("Text for vectorization cannot be empty");
     }
 
-    logger.debug("Запит на отримання вектору", {
+    logger.debug("Request to get vector", {
       textLength: text.length,
       model,
     });
 
-    // Використання SDK
+    // Using SDK
     const response = await openai.embeddings.create({
       input: text,
       model,
@@ -46,24 +44,24 @@ export async function getTextEmbedding(
     const embedding = response.data[0]?.embedding;
 
     if (!embedding || !Array.isArray(embedding)) {
-      throw new Error("Отримано некоректний формат вбудовування");
+      throw new Error("Received incorrect embedding format");
     }
 
-    logger.debug("Вектор успішно отримано", {
+    logger.debug("Vector successfully obtained", {
       vectorLength: embedding.length,
     });
 
     return embedding;
   } catch (error) {
-    logger.error("Помилка отримання вектору", { error });
+    logger.error("Error getting vector", { error });
 
-    // Запасний варіант через axios у випадку проблем з SDK
+    // Fallback option using axios in case of SDK problems
     if (
       error.message.includes("Unexpected token") ||
       error.message.includes("JSON")
     ) {
       try {
-        logger.info("Спроба отримання вектору через безпосередній API запит");
+        logger.info("Attempting to get vector through direct API request");
 
         const axiosResponse = await axios.post(
           "https://api.openai.com/v1/embeddings",
@@ -83,36 +81,33 @@ export async function getTextEmbedding(
 
         if (!embedding || !Array.isArray(embedding)) {
           throw new Error(
-            "Отримано некоректний формат вбудовування через API запит"
+            "Received incorrect embedding format from API request"
           );
         }
 
-        logger.debug("Вектор успішно отримано через API запит", {
+        logger.debug("Vector successfully obtained via API request", {
           vectorLength: embedding.length,
         });
 
         return embedding;
       } catch (axiosError) {
-        logger.error("Помилка запасного варіанту отримання вектору", {
+        logger.error("Error in fallback vector retrieval method", {
           axiosError,
         });
-        throw new AppError(
-          `Помилка запасного варіанту: ${axiosError.message}`,
-          500
-        );
+        throw new AppError(`Fallback method error: ${axiosError.message}`, 500);
       }
     }
 
-    // Обробка типових помилок
+    // Handling typical errors
     if (error.message.includes("401")) {
-      throw new AppError("Невірний API-ключ OpenAI", 401);
+      throw new AppError("Invalid OpenAI API key", 401);
     } else if (error.message.includes("429")) {
-      throw new AppError("Перевищено ліміт запитів до OpenAI", 429);
+      throw new AppError("Request limit to OpenAI exceeded", 429);
     } else if (error.message.includes("500")) {
-      throw new AppError("Помилка сервера OpenAI", 500);
+      throw new AppError("OpenAI server error", 500);
     }
 
-    throw new AppError(`Помилка при отриманні вектору: ${error.message}`, 500);
+    throw new AppError(`Error retrieving vector: ${error.message}`, 500);
   }
 }
 

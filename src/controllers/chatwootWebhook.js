@@ -8,16 +8,16 @@ import { AppError } from "../middleware/errorHandler.js";
 const router = express.Router();
 
 /**
- * Обробник вебхуку від Chatwoot
+ * Chatwoot webhook handler
  */
 router.post("/webhook", async (req, res) => {
   try {
     const payload = req.body;
-    logger.debug("Отримано вебхук від Chatwoot", { payload });
+    logger.debug("Received webhook from Chatwoot", { payload });
 
-    // Перевірка типу повідомлення
+    // Check message type
     if (payload.message_type !== "incoming") {
-      logger.debug("Пропускаємо повідомлення не вхідного типу", {
+      logger.debug("Skipping non-incoming message type", {
         messageType: payload.message_type,
       });
       return res.status(200).send("OK");
@@ -27,55 +27,55 @@ router.post("/webhook", async (req, res) => {
     const accountId = payload?.account?.id;
     const messageContent = payload?.content;
 
-    // Перевірка наявності необхідних даних
+    // Check for required data
     if (!conversationId || !accountId || !messageContent) {
-      logger.warn("Неповний payload у вебхуку", {
+      logger.warn("Incomplete payload in webhook", {
         conversationId,
         accountId,
         hasContent: !!messageContent,
       });
       return res.status(400).json({
         status: "error",
-        message: "Неповні дані в запиті",
+        message: "Incomplete data in request",
       });
     }
 
-    logger.info(`Отримано повідомлення з розмови ${conversationId}`, {
+    logger.info(`Received message from conversation ${conversationId}`, {
       messageContent,
     });
 
-    // Обробка запиту користувача
+    // Process user request
     try {
-      // Пошук в базі знань
-      logger.debug("Пошук інформації в базі знань");
+      // Search in knowledge base
+      logger.debug("Searching for information in knowledge base");
       const contentFromDB = await processUserMessage(messageContent);
-      logger.debug("Результат пошуку в базі знань", { contentFromDB });
+      logger.debug("Knowledge base search result", { contentFromDB });
 
-      // Генерація відповіді через AI
-      logger.debug("Генерація відповіді через AI");
+      // Generate response via AI
+      logger.debug("Generating response via AI");
       const replyContent = await processAIagent(messageContent, {
         context: contentFromDB,
       });
-      logger.info("Згенеровано відповідь AI", {
+      logger.info("AI response generated", {
         responseLength: replyContent.length,
       });
 
-      // Відправка відповіді через Chatwoot API
-      logger.debug("Відправка відповіді в Chatwoot");
+      // Send response through Chatwoot API
+      logger.debug("Sending response to Chatwoot");
       await chatwootService.sendMessage(
         accountId,
         conversationId,
         replyContent
       );
 
-      logger.info("Відповідь успішно відправлена");
+      logger.info("Response successfully sent");
       res.status(200).json({ status: "success" });
     } catch (error) {
-      logger.error("Помилка при обробці повідомлення", { error });
+      logger.error("Error processing message", { error });
 
-      // Надсилаємо відповідь про помилку користувачу
+      // Send error response to user
       const errorMessage =
-        "Вибачте, сталася помилка при обробці вашого запиту. Спробуйте ще раз або зверніться до підтримки.";
+        "Sorry, an error occurred while processing your request. Please try again or contact support.";
 
       try {
         await chatwootService.sendMessage(
@@ -84,34 +84,34 @@ router.post("/webhook", async (req, res) => {
           errorMessage
         );
       } catch (sendError) {
-        logger.error("Не вдалося відправити повідомлення про помилку", {
+        logger.error("Failed to send error message", {
           sendError,
         });
       }
 
-      // Повертаємо 200 для Chatwoot, щоб він не намагався повторно відправити вебхук
+      // Return 200 to Chatwoot so it doesn't retry sending the webhook
       res.status(200).json({
         status: "error",
-        message: "Помилка оброблена",
+        message: "Error handled",
       });
     }
   } catch (error) {
-    logger.error("Критична помилка при обробці вебхука", { error });
+    logger.error("Critical error processing webhook", { error });
     res.status(500).json({
       status: "error",
-      message: "Внутрішня помилка сервера",
+      message: "Internal server error",
     });
   }
 });
 
 /**
- * Тестовий ендпоінт для перевірки роботи вебхука
+ * Test endpoint to verify webhook functionality
  */
 router.get("/webhook", (req, res) => {
-  logger.info("Отримано GET запит на /webhook");
+  logger.info("Received GET request to /webhook");
   res.status(200).json({
     status: "success",
-    message: "✅ Вебхук працює!",
+    message: "✅ Webhook is working!",
   });
 });
 
