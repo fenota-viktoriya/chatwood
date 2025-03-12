@@ -1,0 +1,12 @@
+Profile setup
+
+The first thing to do for an admin on the platform is to set up your profile. Add your data, which will be shown to your users, and configure alert settings so that nothing is missed.
+
+Click on your account name at the top right > Profile button (screenshot 1)
+Add necessary info about you. 
+
+Select how you want to receive alerts and notifications and events you want to be warned about. It’s better to enable all events and disable unneeded ones after testing.
+
+To get alerts via Telegram, link your account. Click ‘Update’ to save the changes. (screenshot 2)
+
+

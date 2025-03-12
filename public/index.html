@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatwoot Integration</title>
+  </head>
+  <body>
+    <h1>Привет!Это наш сайт</h1>
+    <p>Внизу наш чат</p>
+
+    <script>
+      (function (d, t) {
+        var BASE_URL = "https://app.chatwoot.com";
+        var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+        g.onload = function () {
+          window.chatwootSDK.run({
+            websiteToken: "1aaXFRK8DcvTd6X8xRVvHZNF",
+            baseUrl: BASE_URL,
+          });
+        };
+      })(document, "script");
+    </script>
+  </body>
+</html>

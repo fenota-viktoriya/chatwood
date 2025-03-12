@@ -1,0 +1,102 @@
+RTB Integration
+
+Set up OpenRTB, XML/JSON (we call it simple RTB), and direct API integration to automate the sales process, depending on your preference.
+
+Supported traffic types:
+Direct clicks, display banners with creatives
+
+Authorization can be done either in the header or via the query string by adding it to the endpoint URL.
+
+
+Supply Side (Publisher)
+
+Supported integration types:
+Open RTB (2.5/3.0), XML/JSON/API
+
+Follow the steps below to integrate supply-side partners into the Open RTB auction.
+
+Create an account in your network for the publisher if they don’t have one yet;
+Provide the publisher with RTB documentation; (add domain variable to the link if needed) 
+Set up the publisher’s site and separate ad zones for each traffic type, setting the bid rate as a payout type;
+Share the ‘cid’ (ad zone ID) parameter with the publisher for every ad zone created;
+Advise Publisher to pass clickid, email or email_encoded, cid, and utm_term into ext as per documentation;
+Ask where they send the optimization parameters so you can check and adapt them to our utm_specific passing;
+Create a test campaign to ensure that traffic flows smoothly. 
+
+The endpoint link remains unchanged and includes the following:
+2.5 or 3.0 depending on the OpenRTB version the publisher has selected:
+e.g. https://rtb.domain.com/openrtb/2.5
+2.5_cpm or 3.0_cpm to operate in CPM since the minimum bid price for these requests is expressed in CPC:
+e.g. https://rtb.domain.com/openrtb/2.5_cpm
+if the publisher would like to move authorization from the header to the query string, here are the parameters they should use:
+affId - account ID
+secretId - API key
+cid - ad zone ID
+
+
+IMPORTANT! 
+If the publisher can balance the traffic from different locations to different endpoints, use the following subdomains for the endpoint:
+- US, CA, LATAM - rtbus.domain.com  subdomain
+ e.g. https://rtbus.domain.com
+- the rest of the world - rtbeu.domain.com subdomain
+e.g. https://rtbeu.domain.com
+the ID of the bid request can be just a random number that repeats itself, but it has to be present;
+you’ll find affId (ACCOUNT_ID) and secretId (API_KEY) in the RTB Documentation > Authorizations section (you need to log in as the publisher) (screenshot 1)
+
+Endpoint examples:
+
+Open RTB - Authorization in the header
+https://rtb.domain.com/openrtb/2.5
+
+Open RTB - Authorization in the URL
+https://rtb.domain.com/openrtb/2.5_cpm?affId=…&secretId=…&cid=ad_zone_ID
+
+XML/JSON link
+https://rtb.domain.com/rtb/basic/[cid]?affId= …&secretId=…&id=...&ip=...&useragent=...&lang=...&other_parameters=...
+
+
+Demand side (Advertiser)
+
+Supported integration types:
+Open RTB (2.5/3.0), XML/JSON, API
+
+Note that Open RTB 2.5 or 3.0 is available for integration between BitBuilder platform networks.
+
+Supported traffic types:
+Direct clicks, display banners with creatives
+
+Use the following instructions to integrate a demand-side partner via Open RTB, XML/JSON, or API:
+
+Third-party service integration:
+
+Create an advertiser account in your network if an advertiser doesn’t have one yet;
+Get documentation for the API or RTB integration from the advertiser;
+Agree with an advertiser on the traffic type;
+Get all the necessary credentials for the API/auction access;
+Pass all the info on to the BidBuilder support team for integration;
+Once development is completed, your new demand partner will appear in the list in your campaigns;
+Set up the Advertiser campaign with targeting and bids: 
+Set up API (RTB/XML/JSON auction) or API buying type in step 1 (screenshot 2). 
+Select the advertiser from the list on step 2 Links > Add demand partner button (screenshot 3);
+Add the details of your ad zone in the partner network and finish campaign creation.
+Watch Raw logs to make sure all is working correctly and clicks are being sold;
+Copy campaign if more is needed (do not create them from scratch!).
+
+BidBuilder has a pool of pre-integrated demand partners. So please check if your prospect partner is on the list when creating a campaign and adding a demand partner. In case you don’t see it, contact the B2B manager.
+
+Integration between BidBuilder networks:
+
+If you are a supply partner (sell traffic):
+
+Ask your partner to create a publisher account for you in THEIR network;
+Log in to that account and take affId and secretId on the RTB documentation page;
+Create an advertiser account for your demand partner in YOUR network if they don’t have one yet;
+Create a campaign: 
+set any version of RTB for buying type on step 1 (screenshot 4);
+select the required demand partner from the dropdown list on step 2 (screenshot 5)
+Watch traffic to make sure all is working correctly and clicks are being sold;
+Copy campaign if more is needed (do not create them from scratch!).
+
+If you’re demand 
+
+If you would like to start ad formats (traffic type) that are currently not supported, please ask our support team for help.
