@@ -1,117 +1,98 @@
-// import OpenAI from "openai";
-// import { deepseekApiKey } from "./config.js";
-
-// if (!deepseekApiKey) {
-//   throw new Error(
-//     "Відсутній DeepSeek API ключ. Переконайтеся, що він заданий у файлі .env"
-//   );
-// }
-
-// // Ініціалізація OpenAI SDK для використання DeepSeek
-// const openai = new OpenAI({
-//   baseURL: "https://api.deepseek.com",
-//   apiKey: deepseekApiKey,
-// });
-
-// export async function processAIagent(text) {
-//   console.log(text);
-//   try {
-//     const completion = await openai.chat.completions.create({
-//       messages: [{ role: "user", content: text }],
-//       model: "deepseek-chat",
-//     });
-
-//     return completion.choices[0].message.content;
-//   } catch (error) {
-//     console.error("❌ Помилка під час виклику AI DeepSeek:", error.message);
-//     return "Вибачте, сталася помилка при генерації відповіді AI.";
-//   }
-// }
-
-import OpenAI from "openai";
-import { openaiApiKey } from "../utils/config.js";
-
-if (!openaiApiKey) {
-  throw new Error(
-    "❌ Відсутній OpenAI API ключ. Додайте його у config.js або .env."
-  );
-}
-
-// Ініціалізація OpenAI SDK для використання GPT-4
-const openai = new OpenAI({
-  apiKey: openaiApiKey,
-});
+// src/controllers/processAIagent.js
+import { getTextEmbedding } from "../services/ai/embeddings.js";
+import { generateCompletion } from "../services/ai/openai.js";
+import { searchSimilarDocuments } from "../services/chroma/search.js";
+import logger from "../utils/logger.js";
+import { AppError } from "../middleware/errorHandler.js";
 
 /**
- * Викликає OpenAI GPT-4 для генерації відповіді на основі тексту з ChromaDB і запиту користувача.
- * @param {string} usersAnswer - Вхідний текст користувача.
- * @param {string} text - Інформація, знайдена в ChromaDB.
- * @returns {Promise<string>} - Відповідь від OpenAI.
+ * Обробка запиту користувача через AI
+ * @param {string} userQuery - Запит користувача
+ * @param {Object} options - Додаткові параметри
+ * @returns {Promise<string>} Відповідь від AI
  */
-export async function processAIagent(usersAnswer, text) {
-  console.log(`📩 Запит до OpenAI: ${usersAnswer}`);
-  //console.log(`📚 Контекст з ChromaDB: ${text}`);
-
+export async function processAIagent(userQuery, options = {}) {
   try {
-    if (!usersAnswer || usersAnswer.trim() === "") {
-      console.warn("⚠️ Користувач не надіслав питання.");
-      return "Будь ласка, поставте своє питання.";
-    }
-
-    if (!text || text.trim() === "") {
-      console.warn("⚠️ ChromaDB не повернула релевантних результатів.");
-      return "На жаль, я не знайшов інформації з бази, але можу відповісти загально.";
-    }
-
-    const prompt = `
-    Ти — інтелектуальний помічник, який допомагає користувачам отримувати відповіді на їхні питання.
-    Використовуй подану інформацію з бази знань (ChromaDB) для відповіді, але якщо вона не містить потрібних даних, надай корисну загальну відповідь.
-
-    📌 **Питання користувача:** 
-    "${usersAnswer}"
-
-    📖 **Інформація з ChromaDB:** 
-    "${text}"
-
-    🎯 **Твоя відповідь повинна бути:** 
-    - Зрозумілою та логічною.
-    - Використовувати інформацію з ChromaDB, якщо вона містить релевантні дані.
-    - Якщо інформація не містить відповіді, поясни тему загалом.
-    - Не вигадуй відповідей, якщо не маєш достатньо інформації.
-
-    ℹ️ Відповідай коротко та по суті.
-    `;
-
-    const completion = await openai.chat.completions.create({
-      model: "o3-mini",
-      messages: [{ role: "system", content: prompt }],
-      temperature: 0.7,
+    logger.info("Отримано запит користувача", {
+      query: userQuery,
+      options,
     });
 
-    const aiResponse =
-      completion.choices[0]?.message?.content || "Відповідь AI не отримана.";
-    console.log(`🤖 Відповідь від OpenAI: ${aiResponse}`);
+    if (!userQuery || userQuery.trim() === "") {
+      return "Будь ласка, введіть ваше питання.";
+    }
+
+    // Отримання вектору запиту
+    logger.debug("Генерація вектору для запиту користувача");
+    const queryEmbedding = await getTextEmbedding(userQuery);
+
+    // Пошук релевантних документів
+    logger.debug("Пошук релевантних документів");
+    const relevantDocs = await searchSimilarDocuments(
+      userQuery,
+      queryEmbedding
+    );
+
+    if (
+      !relevantDocs ||
+      relevantDocs === "Вибачте, не знайдено відповідних результатів."
+    ) {
+      logger.info(
+        "Не знайдено релевантних документів, генерую загальну відповідь"
+      );
+      return await generateCompletion(userQuery, "");
+    }
+
+    // Генерація відповіді з контекстом
+    logger.debug("Генерація відповіді з контекстом");
+    const aiResponse = await generateCompletion(
+      userQuery,
+      relevantDocs,
+      options
+    );
 
     return aiResponse;
   } catch (error) {
-    console.error("❌ Помилка під час виклику OpenAI GPT-4:", error);
+    logger.error("Помилка обробки запиту AI", { error });
 
-    if (error.response) {
-      console.error("📢 Відповідь сервера OpenAI:", error.response.data);
-    } else if (error.request) {
-      console.error("📢 Помилка запиту: сервер не відповідає.");
-    } else {
-      console.error("📢 Неочікувана помилка:", error.message);
+    // Формування зрозумілої відповіді користувачу
+    if (error instanceof AppError) {
+      if (error.statusCode === 401) {
+        return "Виникла проблема з автентифікацією AI сервісу. Зверніться до адміністратора.";
+      } else if (error.statusCode === 429) {
+        return "Перевищено ліміт запитів до AI сервісу. Спробуйте пізніше.";
+      }
     }
 
-    if (error.message.includes("401")) {
-      return "❌ Невірний API-ключ OpenAI. Перевірте налаштування.";
-    } else if (error.message.includes("429")) {
-      return "🚨 Ліміт запитів до OpenAI вичерпано. Спробуйте пізніше.";
-    } else if (error.message.includes("500")) {
-      return "🛠️ Помилка сервера OpenAI. Будь ласка, спробуйте ще раз.";
-    }
-
-    return `❌ Виникла помилка: ${error.message}`;
+    return `На жаль, виникла помилка при обробці вашого запиту. ${error.message}`;
   }
 }
+
+/**
+ * Обробка текстового повідомлення користувача
+ * @param {string} message - Повідомлення користувача
+ * @returns {Promise<string>} Результат обробки
+ */
+export async function processUserMessage(message) {
+  try {
+    if (!message || message.trim() === "") {
+      return "Будь ласка, введіть ваше питання.";
+    }
+
+    // Отримання вектору
+    const queryEmbedding = await getTextEmbedding(message);
+
+    // Пошук релевантних документів
+    const results = await searchSimilarDocuments(message, queryEmbedding);
+
+    return results;
+  } catch (error) {
+    logger.error("Помилка обробки повідомлення користувача", { error });
+    return "Сталася помилка під час пошуку.";
+  }
+}
+
+export default {
+  processAIagent,
+  processUserMessage,
+};

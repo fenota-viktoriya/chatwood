@@ -1,97 +1,118 @@
+// src/controllers/chatwootWebhook.js
 import express from "express";
-import axios from "axios";
-import { searchSimilarVectors } from "../services/searchVectors.js";
-import { processAIagent } from "../controllers/processAIagent.js";
-import { charwoodApiToken } from "../utils/config.js";
+import { processAIagent, processUserMessage } from "./processAIagent.js";
+import { chatwootService } from "../services/chatwoot/client.js";
+import logger from "../utils/logger.js";
+import { AppError } from "../middleware/errorHandler.js";
 
-const app = express();
-
-// Розбір JSON-тел запитів
-app.use(express.json());
+const router = express.Router();
 
 /**
- * Вебхук для отримання повідомлень від Chatwoot
+ * Обробник вебхуку від Chatwoot
  */
-app.post("/webhook", async (req, res) => {
+router.post("/webhook", async (req, res) => {
   try {
     const payload = req.body;
-    if (payload.message_type == "incoming") {
-      const conversationId = payload?.conversation?.id;
-      const accountId = payload?.account?.id;
-      const messageContent = payload?.content;
+    logger.debug("Отримано вебхук від Chatwoot", { payload });
 
-      if (!conversationId || !accountId || !messageContent) {
-        return res.status(400).send("Неповний payload");
-      }
+    // Перевірка типу повідомлення
+    if (payload.message_type !== "incoming") {
+      logger.debug("Пропускаємо повідомлення не вхідного типу", {
+        messageType: payload.message_type,
+      });
+      return res.status(200).send("OK");
+    }
 
-      console.log(
-        `Отримано повідомлення з розмови ${conversationId}: ${messageContent}`
-      );
+    const conversationId = payload?.conversation?.id;
+    const accountId = payload?.account?.id;
+    const messageContent = payload?.content;
 
-      // Обробка повідомлення користувача
+    // Перевірка наявності необхідних даних
+    if (!conversationId || !accountId || !messageContent) {
+      logger.warn("Неповний payload у вебхуку", {
+        conversationId,
+        accountId,
+        hasContent: !!messageContent,
+      });
+      return res.status(400).json({
+        status: "error",
+        message: "Неповні дані в запиті",
+      });
+    }
+
+    logger.info(`Отримано повідомлення з розмови ${conversationId}`, {
+      messageContent,
+    });
+
+    // Обробка запиту користувача
+    try {
+      // Пошук в базі знань
+      logger.debug("Пошук інформації в базі знань");
       const contentFromDB = await processUserMessage(messageContent);
-      console.log(`Результат пошуку вектора: ${contentFromDB}`);
+      logger.debug("Результат пошуку в базі знань", { contentFromDB });
 
-      const replyContent = await processAIagent(messageContent, contentFromDB);
-      console.log(`Згенерована AI відповідь: ${replyContent}`);
+      // Генерація відповіді через AI
+      logger.debug("Генерація відповіді через AI");
+      const replyContent = await processAIagent(messageContent, {
+        context: contentFromDB,
+      });
+      logger.info("Згенеровано відповідь AI", {
+        responseLength: replyContent.length,
+      });
 
-      // Формування URL для відправки відповіді через API Chatwoot
-      const chatwootApiUrl = `https://app.chatwoot.com/api/v1/accounts/${accountId}/conversations/${conversationId}/messages`;
-      const chatwootApiToken = charwoodApiToken;
-
-      if (!chatwootApiToken) {
-        throw new Error("CHATWOOT_API_TOKEN не заданий у .env файлі");
-      }
-
-      // Відправка відповіді в розмову
-      const response = await axios.post(
-        chatwootApiUrl,
-        {
-          content: replyContent,
-          message_type: "outgoing",
-        },
-        {
-          headers: {
-            api_access_token: chatwootApiToken,
-            "Content-Type": "application/json",
-          },
-        }
+      // Відправка відповіді через Chatwoot API
+      logger.debug("Відправка відповіді в Chatwoot");
+      await chatwootService.sendMessage(
+        accountId,
+        conversationId,
+        replyContent
       );
 
-      console.log("Відповідь від Chatwoot API:", response.data);
+      logger.info("Відповідь успішно відправлена");
+      res.status(200).json({ status: "success" });
+    } catch (error) {
+      logger.error("Помилка при обробці повідомлення", { error });
 
-      // Відповідь Chatwoot, що запит оброблено
-      res.status(200).send("OK");
+      // Надсилаємо відповідь про помилку користувачу
+      const errorMessage =
+        "Вибачте, сталася помилка при обробці вашого запиту. Спробуйте ще раз або зверніться до підтримки.";
+
+      try {
+        await chatwootService.sendMessage(
+          accountId,
+          conversationId,
+          errorMessage
+        );
+      } catch (sendError) {
+        logger.error("Не вдалося відправити повідомлення про помилку", {
+          sendError,
+        });
+      }
+
+      // Повертаємо 200 для Chatwoot, щоб він не намагався повторно відправити вебхук
+      res.status(200).json({
+        status: "error",
+        message: "Помилка оброблена",
+      });
     }
   } catch (error) {
-    console.error("Помилка при обробці вебхука:", error);
-    res.status(500).send("Error");
+    logger.error("Критична помилка при обробці вебхука", { error });
+    res.status(500).json({
+      status: "error",
+      message: "Внутрішня помилка сервера",
+    });
   }
 });
 
-app.get("/webhook", (req, res) => {
-  res.status(200).send("✅ Webhook працює!");
+/**
+ * Тестовий ендпоінт для перевірки роботи вебхука
+ */
+router.get("/webhook", (req, res) => {
+  logger.info("Отримано GET запит на /webhook");
+  res.status(200).json({
+    status: "success",
+    message: "✅ Вебхук працює!",
+  });
 });
 
-// Функція для обробки повідомлення користувача та генерації відповіді.
-async function processUserMessage(message) {
-  try {
-    const results = await searchSimilarVectors(message);
-    if (results) {
-      return `Найбільш схожий документ: "${results}"`;
-    } else {
-      return "Вибачте, не знайдено відповідних результатів.";
-    }
-  } catch (error) {
-    console.error("Помилка при обробці повідомлення:", error);
-    return "Сталася помилка під час пошуку.";
-  }
-}
-
-export { processUserMessage };
-
-// Запуск сервера
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Сервер запущено на порті ${PORT}`);
-});
+export default router;
