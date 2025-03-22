@@ -1,0 +1,50 @@
+def stageName = "";
+node {
+	try {
+	    notifyBuild('STARTED','Start')
+	    currentBuild.result = 'SUCCESS'
+	    def gcrTag = "devel"
+	    def dpImageTagWeb = "dp/ai-help-bot"
+            def dpDockerFileSuffix = ""
+
+
+	    // Mark the code checkout 'stage'....
+	    	    stage('Checkout') {
+        			stageName = "Checkout"
+                    // Get some code from a Bitbucket repository
+                    checkout scm
+                }
+
+
+
+        def dpAppNameWeb = "ai-help-bot"
+
+
+        stage('build docker ai-help-bot image') {
+            stageName = "build docker ai-help-bot image"
+            sh "docker build --no-cache -f Dockerfile${dpDockerFileSuffix} --build-arg BUILD_NUMBER=${BUILD_NUMBER} . -t ${dpImageTagWeb}"
+        }
+
+
+        echo "Build status"
+        echo currentBuild.result
+    } catch (err) {
+        currentBuild.result = 'FAILURE'
+        echo "Got error"
+        throw  err
+    } finally {
+        // Success or failure, always send notifications
+        notifyBuild(currentBuild.result, stageName)
+    }
+}
+
+def notifyBuild(String buildStatus = 'STARTED', String stageName = '') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESS'
+
+  def colorCode = '#FF0000'
+  def summary = "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${buildStatus} (<${env.BUILD_URL}|Open>)"
+  if (buildStatus == 'STARTED') { colorCode = '#3FA154' }
+  if (buildStatus == 'SUCCESS') { colorCode = '#3FA154' } 
+  slackSend (color: colorCode, message: summary)
+}
