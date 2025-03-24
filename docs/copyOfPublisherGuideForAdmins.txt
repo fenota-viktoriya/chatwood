@@ -1,0 +1,168 @@
+Publisher’s Guide for admins and account managers
+
+Follow the steps below to create a publisher account and launch traffic flow.
+
+Create an account 
+
+Please go to System > Accounts. Click the ‘Add’ button at the top left. (screenshot 1) 
+
+Carefully fill in the info fields. Select a Publisher role, or tick the ‘Select all’ checkbox to apply both roles to an account. (screenshot 2) Click ‘Save’ at the very bottom of the page. (screenshot 3)
+
+Ensure you have agreed on the currency with the customer before approving or creating an account - you cannot change the currency after saving.
+
+Once an account is created, the user is made as well. It will appear in the Users section under the same email and username.
+
+           … or approve an account
+
+Your customers can register an account themselves. In such case you need to check and approve it.
+
+You’ll find all created but not yet approved accounts in the System > Accounts approval section of the left-side navigation bar: (screenshot 1)
+
+Click on the ‘Approve account’ (edit) button to open the editing and approval popup window: (screenshot 2)
+
+Fill in the fields and click the ‘Add’ button to approve the new account. You can also delete an account there.
+
+Create a site
+
+A site is an entity that represents the source of traffic for advertisers. You need to create a site to add ad zones to it.
+
+To add a new site please go to the Publisher > List of Sites section: (screenshot 1)
+
+Click the ‘Add’ button at the top right. Fill out the required fields. 
+
+Publisher - select a publisher you add a site for from the list. Search for the needed one using the Publisher ID.
+Name - you can use any name, but the best practice here is to name sites by ad formats (Banner, Push, email clicks, etc. ). Never use the real traffic source name/website for site naming, the traffic sources shouldn’t be disclosed to advertisers.
+Site URL - a site from which the publisher traffic flows. Take the URL from the publisher and add https://pubsdomain.com/PUB_ID, for instance, https://pubsdomain.com/111 
+Site Domain - add a raw domain without protocol and subdomain (pubsdomain.com).
+Description - add a brief description of a site (optionally).
+
+Click ‘Save’ to create a site.
+
+Add and set up an Ad zone
+
+An ad zone is a representation of ad placement or ad spot. It can be used to segment traffic into different types.
+
+Navigate to the Publishers > List of Ad Zones section. Click the ‘Add’ button at the top right. (Screenshot 1)
+
+Carefully fill out the needed fields to set up an ad zone.
+
+Publisher - select a Publisher from the dropdown list. 
+Name - assign a name for an ad zone.
+Ad Zone Tags - assign a tag/tag to the ad zone to filter it out by a certain tag.
+Publisher Site Name - select the site name from the list of sites created for the publisher.
+Vertical - select the relevant vertical from the dropdown list.
+
+Check the list of options below. Tick the needed checkboxes according to the publisher’s requirements. 
+Always enable the ‘Mask utm_term for the advertiser’ option since it allows the publisher to hide its sources. 
+
+Use weights for advertiser campaigns - Advertiser campaigns that target this ad zone will have the Weight field. It will allow showing some campaigns more frequently than
+the others given the same click targeting.
+
+Enable advertiser cost macro - This function will allow the publisher to add advertiser cost to their postback using the macros {%cost%} and {%cost_usd%}. It can be enabled by the network admins and managers only, and is not visible to the pubs.
+
+Traffic Type - select the traffic type from the dropdown list. 
+Important! Select carefully since you won’t be able to edit this field after saving.
+In case you select the ‘Display banner (with creatives)’ type, fill out the additional fields as agreed with the publisher. 
+Block these Verticals - here you can add verticals the publisher doesn’t want to work with. 
+Ad Zone Sharing Type - it can be:
+Public - ad zone is available to all advertisers within a network;
+Shared with other networks - ad zone is available to other networks (rare case);
+Private - ad zone is created for specific advertisers. In such cases, you must also add the advertisers in the ‘Allowed advertisers’ field.
+Fallback URL - add a URL for returning excessive clicks or those that fail on targeting. Usually the publisher provides a URL.
+Email Passing - enable this option if the ad zone requires email passing.
+Fallback URL (Missing Email) - if the ‘Email passing’ option is enabled, add a fallback URL for the clicks without email.
+Macro to Return Email (RTB only) - if the email is not passed with the bid request after the bid is won, add the {email} or any other name of the macro the publisher uses to return an email.
+Postback URL - add a tracking URL for a publisher with parameters they want to be returned.
+Postback URL for Fallback Clicks (Direct clicks only) - if required add a separate postback URL for fallback clicks only.
+Postback URL for Clicks Failed on Anti-Bot - if required add a separate postback URL for clicks that failed on Anti-Bot.
+Conversion Postback from the Advertiser - if required add a separate postback URL for tracking traffic conversion.
+Note - add any information you need.
+Payment Model - it depends on the traffic type. The CPC model is set by default and used for all traffic types. The CPM payment model may be selected for ‘Display banner (with creatives)’ only.
+Payout Type - there are three options to choose:
+Bid Rate % is used for RTB deals. Set the publisher’s payout in percent (consult with the team lead) and the minimum CPC/CPM you discussed with the publisher.
+Flat Payout - deal with a fixed price per number of days or clicks. 
+Fixed CPC/CPM - fixed price for click.
+The field cannot be edited after saving.
+Publisher CPC/CPM Rate - amount per click that is paid to the publisher
+Minimum CPC/CPM for the Advertiser - minimum price per click for advertisers. 
+Rates per Country - set different rates per click for different geos.
+
+Once you set up the ad zone and click Save, it will appear in the list of ad zones with the link that should be completed with the required parameters and passed to the publisher. (screenshot 4)
+
+Repeat the steps to create a separate ad zone for each traffic type the publisher offers.
+
+Click on the link and add parameters. Copy the link and pass it to the publisher. They should add their utm_term and other parameters to the link.
+(screenshot 5)
+
+Depending on the situation and deal terms and conditions, you can give the final link to the publisher with or without an anti-bot integrated. Change the domain from https://pdtrcks.com to https://ab.pdtrcksus.com to create the link with anti-bot. (add a variable for adjustable link) 
+
+      3.1 Real-Time Bidding Integration - Supply side
+
+To set up an ad zone for working via Open RTB protocol, follow these instructions:
+RTB Integration
+
+Find an advertiser and create a campaign for the ad zone
+
+Before the publisher starts sending traffic, make sure you have a buyer and an active campaign created for them. See how to create a campaign in the dedicated article. Assign an ad zone to the campaign on the last step (Filters).
+
+Check if the campaign fits into the ad zone
+
+Go to the Traffic Snapshot tab. Use filters to get the info about the needed ad zone. (screenshot 1)
+You should see the campaign you assigned to the ad zone in the list.
+
+If the required campaign doesn’t appear for the ad zone in Traffic Snapshot, the bid is probably the issue. Check if the bid set for the campaign covers the one in the ad zone. You can see the bid on the rate card or directly on the campaign/ad zone card.
+
+If everything seems ok, you can try to refresh the ad zone on the Traffic Snapshot page to make the campaign appear within the ad zone:  (screenshot 3)
+
+Once all the steps are performed and the needed campaign is linked to the ad zone, the publisher can send traffic.
+
+Ad Zone Changes Log
+
+To track changes you or your users make on the ad zone go to the Publishers > Ad zone changes log section. Adjust filters in the action bar to see needed events, what was changed, when, and by whom. (screenshot 1) 
+
+How to check why an ad zone has unsold clicks (Raw Logs and additional reports)
+
+If the ad zone in question is new, check if the campaign it was supposed to be selling to meets the targeting. Make sure the bid set in the campaign matches the one in the ad zone. 
+
+If the targeting is set up correctly, check the logs. 
+
+There are a bunch of reports that are extremely helpful when troubleshooting different issues. The Raw Logs report is highly detailed and informative for analysis and investigation.
+
+Go to the Raw Logs tab. Click on the filters bar and select a time period, ad zone campaign, and whatever you need to filter out the required info. (screenshot 2)
+
+Select the log source:
+
+The Aggregated main database contains all successful requests for sold and unsold clicks for 45 days.
+To see failed requests select All requests (EU or America). Note that they are stored for 72 hours only!
+
+(screenshot 3)
+
+The tabs in the Order by section allow you to organize the data by different parameters such as date, device, country, request ID, and others.
+
+You can either check the data in the platform interface (click ‘View’) or export the report in the CSV or XLSX format for further data manipulation (click on the ‘Generate downloadable report’ button). You’ll find the generated report in the Log files download tab. (screenshot 4)
+
+Two columns among others help you to understand what’s going wrong:
+
+Status - indicates the state of the request. Can be:
+Created - impression or click initiated, but not fulfilled after;
+Displayed - ad creative shown to the customer;
+Bot detected - click identified as automated (bot click);
+Executed - billable event created, click for display ads, bill;
+Timed out - request to the advertiser platform was longer than 300ms, and timed out;
+Auction lost - advertiser has sent a ‘lost auction’ response (lurl);
+No campaign - no advertiser bids for this impression or click;
+Test request - this request was made in a test mode.
+
+Note - a message indicating why a click wasn’t sold. 
+
+24401:rejected because of campaign Frequency capping (24), previous click: 6768ceee9f0a25d5b76a9318 at 2024-12-23 02:46:06Z;
+ There can be several messages from different campaigns in the Note column. In this case they are separated by dividers (||):
+22186:rejected because of campaign Frequency capping (24), previous click: 676be509230fc103eef8ce99 at 2024-12-25 10:57:13Z;||14457.20083: ||14457: no valid active links in the Advertiser campaign;
+You can also check the details of the request and response from the demand side partner (advertiser) OpenRTB campaign clicking on the campaign ID in the very last column: (screenshot 5)
+Please note that it’s better displayed via the platform interface.
+
+
+To search for or filter out the ad zones use filters in the action bar. (screenshot 2)
+You can edit, copy, and disable existing ad zones and get to the report page with the corresponding buttons (scroll to the right). (screenshot 3)
+
+

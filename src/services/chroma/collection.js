@@ -2,7 +2,7 @@
 import chromaClient from "./client.js";
 import logger from "../../utils/logger.js";
 import { config } from "../../config/index.js";
-import { AppError } from "../../middleware/errorHandler.js";
+import { AppError } from "../../../middleware/errorHandler.js";
 
 const DEFAULT_COLLECTION = config.chroma.collectionName;
 

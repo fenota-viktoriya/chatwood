@@ -2,7 +2,7 @@
 import { ChromaClient } from "chromadb";
 import { config } from "../../config/index.js";
 import logger from "../../utils/logger.js";
-import { AppError } from "../../middleware/errorHandler.js";
+import { AppError } from "../../../middleware/errorHandler.js";
 
 /**
  * Singleton ChromaDB client

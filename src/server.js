@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import webhookRoutes from "./routes/webhook.js";
-import errorHandler from "./middleware/errorHandler.js";
+import errorHandler from "../middleware/errorHandler.js";
 import logger from "./utils/logger.js";
 import { config } from "./config/index.js";
 

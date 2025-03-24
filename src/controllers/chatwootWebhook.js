@@ -2,7 +2,6 @@ import express from "express";
 import { processAIagent, processUserMessage } from "./processAIagent.js";
 import { chatwootService } from "../services/chatwoot/client.js";
 import logger from "../utils/logger.js";
-import { AppError } from "../middleware/errorHandler.js";
 
 const router = express.Router();
 

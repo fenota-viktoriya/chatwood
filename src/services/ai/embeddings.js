@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import axios from "axios";
 import { config } from "../../config/index.js";
 import logger from "../../utils/logger.js";
-import { AppError } from "../../middleware/errorHandler.js";
+import { AppError } from "../../../middleware/errorHandler.js";
 
 // Check for API key
 if (!config.openai.apiKey) {

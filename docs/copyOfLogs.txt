@@ -1,0 +1,73 @@
+Raw Logs and additional reports
+
+There are a bunch of reports that are extremely helpful when troubleshooting different issues. The Raw Logs report is highly detailed and informative for analyzing and investigating the issues.
+
+Go to the Raw Logs tab. Click on the filters bar and select a time period, ad zone campaign, and whatever you need to filter out the required info. (screenshot 2)
+
+Select the log source:
+
+The Aggregated main database contains all successful requests for sold and unsold clicks for 45 days. If you don’t see any results in the aggregated database, select All requests (EU or America depending on targeting geos), where you’ll find failed requests.
+Note that failed requests are stored for 72 hours only, so start debugging as fast as possible.
+
+(screenshot 3)
+
+The tabs in the Order by section allow you to organize the data by different parameters such as date, device, country, request ID, and others.
+
+You can either check the data in the platform interface (click ‘View’) or export the report in the CSV or XLSX format for further data manipulation (click on the ‘Generate downloadable report’ button). You’ll find the generated report in the Log files download tab. (screenshot 4)
+
+Two columns among others help you to understand what’s going wrong:
+
+Status - indicates the state of the request. Can be:
+Created - impression or click initiated, but not fulfilled after;
+Displayed - ad creative shown to the customer;
+Bot detected - click identified as automated (bot click);
+Executed - billable event created, click for display ads, bill;
+Timed out - request to the advertiser platform was longer than 300ms, and timed out;
+Auction lost - advertiser has sent a ‘lost auction’ response (lurl);
+No campaign - no advertiser bids for this impression or click;
+Test request - this request was made in a test mode.
+
+Note - a message indicating why a click wasn’t sold. 
+
+24401:rejected because of campaign Frequency capping (24), previous click: 6768ceee9f0a25d5b76a9318 at 2024-12-23 02:46:06Z;
+ There can be several messages from different campaigns in the Note column. In this case they are separated by dividers (||):
+22186:rejected because of campaign Frequency capping (24), previous click: 676be509230fc103eef8ce99 at 2024-12-25 10:57:13Z;||14457.20083: ||14457: no valid active links in the Advertiser campaign;
+Traffic Snapshot
+
+Traffic Snapshot is a place where you can see if a campaign is built into an ad zone. Use filters to get the info about the needed ad zone. (screenshot 1)
+You should see the campaign you assigned to the ad zone in the list.
+
+If the required campaign doesn’t appear for the ad zone in Traffic Snapshot, the bid is probably the issue. Check if the bid set for the campaign matches the one in the ad zone. You can see the bid on the rate card or directly on the campaign/ad zone card.
+
+If everything seems ok, you can try to refresh the ad zone on the Traffic Snapshot page to make the campaign appear within the ad zone:  (screenshot 3)
+
+
+Failed requests
+
+The report shows all unsold clicks (unique and non-unique ones) for the previous day. The report is generated every morning at 9 AM UTC for the last 24 hours. 
+You can use the report to see the approximate free traffic volume from the publishers. Filter the data by geo, publisher, or ad zone.
+
+
+
+
+Invalid emails report
+
+This report helps to evaluate traffic sources with email passing. It shows the emails that don’t pass basic validation, thus it can serve as proof if billing disagreement arises.
+
+Unique clicks report
+
+This report displays the unique and non-unique clicks that remain unsold.
+
+Advertiser balance
+
+Here you can see the account balance and expenses for all advertisers for the previous month. It can be used for checking balances, and internal accounting purposes.
+
+Blocked sources report
+
+The report contains the traffic sources (UTM terms) that advertisers exclude. It helps to analyze the quality of traffic provided. 
+
+Inventory
+
+Here you can find relevant ad zones for advertisers. Filter ad zones by parameters available in the filter bar. The report is updated once every 24 hours.
+  
+
