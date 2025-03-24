@@ -106,10 +106,6 @@ npm run dev
 3. Make sure your server is publicly accessible
 4. Update the `.env` file with your Chatwoot API token and base URL
 
-## Additional Commands
-
-- `npm run list-documents` - List all documents in the vector database
-
 ## Troubleshooting
 
 ### Common Issues

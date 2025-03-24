@@ -47,11 +47,6 @@ export async function ensureCollectionExists(
   }
 }
 
-/**
- * Get collection stats
- * @param {string} collectionName - Collection name
- * @returns {Promise<Object>} Collection stats
- */
 export async function getCollectionStats(collectionName = DEFAULT_COLLECTION) {
   try {
     const collection = await ensureCollectionExists(collectionName);
@@ -66,11 +61,6 @@ export async function getCollectionStats(collectionName = DEFAULT_COLLECTION) {
   }
 }
 
-/**
- * Reset collection (delete and recreate)
- * @param {string} collectionName - Collection name
- * @returns {Promise<Collection>} New collection
- */
 export async function resetCollection(collectionName = DEFAULT_COLLECTION) {
   try {
     logger.info("Resetting collection", { collectionName });
