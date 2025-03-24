@@ -6,13 +6,6 @@ import { AppError } from "../../../middleware/errorHandler.js";
 
 const DEFAULT_COLLECTION = config.chroma.collectionName;
 
-/**
- * Пошук схожих документів за допомогою векторного вбудовування
- * @param {Array<number>} queryEmbedding - Вектор запиту
- * @param {number} topK - Кількість результатів для повернення
- * @param {string} collectionName - Назва колекції
- * @returns {Promise<Object>} Результати пошуку
- */
 export async function searchByVector(
   queryEmbedding,
   topK = 2,
@@ -27,13 +20,12 @@ export async function searchByVector(
       include: ["documents", "distances", "metadatas", "embeddings"],
     });
 
-    logger.debug("Результати векторного пошуку", {
+    logger.debug("Results", {
       collectionName,
       topK,
       resultsCount: result.ids[0]?.length || 0,
     });
 
-    // Форматування результатів
     const formattedResults = {
       results:
         result.ids[0]?.map((id, index) => ({
@@ -47,16 +39,11 @@ export async function searchByVector(
 
     return formattedResults;
   } catch (error) {
-    logger.error("Помилка пошуку за вектором", { error });
-    throw new AppError(`Помилка пошуку: ${error.message}`, 500);
+    logger.error("Error search", { error });
+    throw new AppError(`Error search: ${error.message}`, 500);
   }
 }
 
-/**
- * Пошук у колекції з фільтрацією
- * @param {Object} options - Параметри пошуку
- * @returns {Promise<Object>} Відфільтровані результати
- */
 export async function searchWithFilter(options = {}) {
   const {
     filter,
@@ -75,13 +62,12 @@ export async function searchWithFilter(options = {}) {
       include: ["documents", "metadatas"],
     });
 
-    logger.debug("Результати пошуку з фільтром", {
+    logger.debug("Result search by filter", {
       collectionName,
       filter,
       resultsCount: result.ids.length,
     });
 
-    // Форматування результатів
     const formattedResults = {
       results: result.ids.map((id, index) => ({
         id,
@@ -93,19 +79,11 @@ export async function searchWithFilter(options = {}) {
 
     return formattedResults;
   } catch (error) {
-    logger.error("Помилка пошуку з фільтром", { error });
-    throw new AppError(`Помилка пошуку з фільтром: ${error.message}`, 500);
+    logger.error("Error search by filter", { error });
+    throw new AppError(`Error search by filter: ${error.message}`, 500);
   }
 }
 
-/**
- * Повний пошук для користувацького запиту
- * @param {string} queryText - Текст запиту користувача
- * @param {Array<number>} queryEmbedding - Вектор запиту
- * @param {number} topK - Кількість результатів
- * @param {string} collectionName - Назва колекції
- * @returns {Promise<string>} Об'єднані результати
- */
 export async function searchSimilarDocuments(
   queryText,
   queryEmbedding,
@@ -120,24 +98,23 @@ export async function searchSimilarDocuments(
     );
 
     if (searchResults.results.length === 0) {
-      logger.info("Не знайдено відповідних документів", { queryText });
-      return "Вибачте, не знайдено відповідних результатів.";
+      logger.info("Not found doc", { queryText });
+      return "Not found doc";
     }
 
-    // Об'єднання знайдених документів
     const combinedResult = searchResults.results
       .map((item) => item.document)
       .join("\n\n");
 
-    logger.debug("Знайдено документи", {
+    logger.debug("Doc", {
       queryText,
       resultCount: searchResults.results.length,
     });
 
     return combinedResult;
   } catch (error) {
-    logger.error("Помилка пошуку документів", { queryText, error });
-    throw new AppError(`Помилка пошуку документів: ${error.message}`, 500);
+    logger.error("Error search doc", { queryText, error });
+    throw new AppError(`Error search doc: ${error.message}`, 500);
   }
 }
 

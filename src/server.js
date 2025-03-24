@@ -12,14 +12,11 @@ import { config } from "./config/index.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Функція копіювання документів з проекту в папку docs
 async function copyProjectDocuments() {
   const docsDirectory = path.join(__dirname, "../docs");
   try {
-    // Створюємо директорію docs, якщо вона не існує
     await fs.mkdir(docsDirectory, { recursive: true });
 
-    // Файли, які треба скопіювати
     const filesToCopy = [
       "README.md",
       "copyOfLogs.txt",
@@ -32,7 +29,6 @@ async function copyProjectDocuments() {
       const sourceFilePath = path.join(__dirname, "..", file);
       const targetFilePath = path.join(docsDirectory, file);
 
-      // Перевіряємо чи існує файл у вихідній директорії
       try {
         await fs.access(sourceFilePath);
       } catch (err) {
@@ -40,12 +36,10 @@ async function copyProjectDocuments() {
         continue;
       }
 
-      // Перевіряємо чи існує вже файл у цільовій директорії
       try {
         await fs.access(targetFilePath);
         logger.info(`File ${file} already exists in docs directory, skipping`);
       } catch (err) {
-        // Файл не існує, можна копіювати
         try {
           await fs.copyFile(sourceFilePath, targetFilePath);
           logger.info(`Copied ${file} to docs directory`);
@@ -92,13 +86,13 @@ app.get("/health", (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Запускаємо сервер після копіювання документів
+// Start the server after copying the documents
 async function startServer() {
   try {
-    // Копіюємо документи перед запуском сервера
+    // Copy documents before starting the server
     await copyProjectDocuments();
 
-    // Запускаємо сервер
+    // start server
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Access the application at http://localhost:${PORT}`);
@@ -109,7 +103,7 @@ async function startServer() {
   }
 }
 
-// Запускаємо сервер
+// start server
 startServer();
 
 // Handle unhandled promise rejections

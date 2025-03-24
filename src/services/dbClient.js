@@ -10,7 +10,7 @@ import { readTextFile } from "../utils/fileProcessor.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Шлях до директорії з документами
+// Path to the document directory
 const docsDirectory = path.join(__dirname, "../../docs");
 
 async function processFile(filePath) {
@@ -18,11 +18,11 @@ async function processFile(filePath) {
     const content = await readTextFile(filePath);
     const fileName = path.basename(filePath);
 
-    // Генеруємо вектор для тексту файлу
+    // Generate a vector for the file text
     logger.info(`Generating embedding for ${fileName}`);
     const embedding = await getTextEmbedding(content);
 
-    // Додаємо документ і вектор до ChromaDB
+    // Add the document and vector to ChromaDB
     logger.info(`Adding ${fileName} to vector database`);
     const result = await addVector(content, embedding, {
       source: fileName,
@@ -39,14 +39,14 @@ async function processFile(filePath) {
 
 async function addAllDocuments() {
   try {
-    // Перевіряємо наявність директорії
+    // Check for directory existence
     try {
       await fs.access(docsDirectory);
     } catch {
       logger.info(`Creating docs directory at ${docsDirectory}`);
       await fs.mkdir(docsDirectory, { recursive: true });
 
-      // Створюємо зразковий документ, якщо папка порожня
+      // Create a sample document if the folder is empty
       const sampleFilePath = path.join(docsDirectory, "sample.txt");
       await fs.writeFile(
         sampleFilePath,
@@ -54,7 +54,7 @@ async function addAllDocuments() {
       );
     }
 
-    // Зчитуємо файли із директорії
+    // Read files from the directory
     const files = await fs.readdir(docsDirectory);
 
     if (files.length === 0) {
@@ -64,11 +64,11 @@ async function addAllDocuments() {
 
     logger.info(`Found ${files.length} documents to process`);
 
-    // Обробляємо кожен файл
+    // Process each file
     for (const file of files) {
       const filePath = path.join(docsDirectory, file);
 
-      // Перевіряємо чи це файл
+      // Check if this is a file
       const stats = await fs.stat(filePath);
       if (stats.isFile()) {
         await processFile(filePath);
@@ -82,5 +82,5 @@ async function addAllDocuments() {
   }
 }
 
-// Виконуємо додавання документів
+// Add documents
 addAllDocuments();
