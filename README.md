@@ -53,6 +53,7 @@ OPENAI_TEMPERATURE=0.7
 # Chatwoot
 CHATWOOT_API_TOKEN=your_chatwoot_api_token_here
 CHATWOOT_BASE_URL=https://app.chatwoot.com
+CHATWOOT_WIDGET_TOKEN=your_chatwoot_widget_token_here
 
 # Logging
 LOG_LEVEL=info
