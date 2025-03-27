@@ -63,6 +63,7 @@ export const config = {
   // Chatwoot
   chatwoot: {
     apiToken: getEnvVariable("CHATWOOT_API_TOKEN"),
+    widgetToken: getEnvVariable("CHATWOOT_WIDGET_TOKEN"),
     baseUrl: getEnvVariable(
       "CHATWOOT_BASE_URL",
       "https://app.chatwoot.com",

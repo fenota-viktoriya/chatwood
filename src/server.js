@@ -62,7 +62,12 @@ const PORT = config.serverPort || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "../public")));
+// Serve all static files except index.html
+app.use(
+  express.static(path.join(__dirname, "../public"), {
+    index: false,
+  })
+);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -74,8 +79,27 @@ app.use((req, res, next) => {
 app.use("/api", webhookRoutes);
 
 // Main route for web interface
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "index.html"));
+app.get("/", async (req, res) => {
+  try {
+    const filePath = path.join(__dirname, "../public", "index.html");
+    let html = await fs.readFile(filePath, "utf-8");
+
+    const { widgetToken, baseUrl } = config.chatwoot;
+
+    if (!widgetToken || !baseUrl) {
+      logger.error("Chatwoot token or base URL is missing in config");
+      return res.status(500).send("Chatwoot configuration missing");
+    }
+
+    html = html
+      .replaceAll("{{CHATWOOT_WIDGET_TOKEN}}", widgetToken)
+      .replaceAll("{{CHATWOOT_BASE_URL}}", baseUrl);
+
+    res.send(html);
+  } catch (err) {
+    logger.error(`Error loading index.html: ${err.message}`);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 // Health check endpoint
